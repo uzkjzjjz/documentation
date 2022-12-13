@@ -38,7 +38,7 @@
     "date-fns": "^2.0.1",
     "details-element-polyfill": "^2.4.0",
     "downshift": "^3.2.10",
-    "find-up": "^4.1.0",
+    "find-up": "^6.3.0",
     "framer-motion": "^3.0.0",
     "fuse.js": "^3.4.5",
     "gatsby-plugin-catch-links": "^4.19.0",
