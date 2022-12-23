@@ -1,6 +1,6 @@
 # This file is automatically added by @npmcli/template-oss. Do not edit.
 
-name: Publish
+name: fahadalbahoth 
 
 on:
   push:
