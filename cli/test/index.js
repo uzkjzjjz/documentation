@@ -1,9 +1,7 @@
 const t = require('tap')
-const { resolve, join, posix } = require('path')
+const { resolve, join } = require('path')
 const fs = require('fs/promises')
 const pacote = require('pacote')
-const yaml = require('yaml')
-const semver = require('semver')
 
 const navPath = resolve(
   __dirname,
@@ -18,6 +16,7 @@ const getReleases = () => [
   {
     id: 'v6',
     branch: 'release/v6',
+    useBranch: true,
   },
   {
     id: 'v7',
@@ -34,12 +33,9 @@ const getReleases = () => [
 ]
 
 const mockBuild = async ({ releases, packument = {}, testdir: testdirOpts }) => {
-  const rawNav = await fs.readFile(navPath, 'utf-8')
-  const nav = yaml.parse(rawNav)
-
   const testdir = t.testdir({
     'releases.json': JSON.stringify(releases),
-    'nav.yml': rawNav,
+    'nav.yml': await fs.readFile(navPath, 'utf-8'),
     content: {},
     ...testdirOpts,
   })
@@ -50,7 +46,7 @@ const mockBuild = async ({ releases, packument = {}, testdir: testdirOpts }) => 
       // so by default they all need to exist
       switch (r.id.slice(1)) {
         case '6':
-          return '6.14.18'
+          return '6.14.17'
         case '7':
           return '7.24.2'
         case '8':
@@ -63,13 +59,6 @@ const mockBuild = async ({ releases, packument = {}, testdir: testdirOpts }) => 
 
   if (!packument.latest) {
     packument.latest = packument.versions[packument.versions.length - 1]
-  }
-
-  const navSection = (ref) => {
-    const id = ref === 'latest' ? `v${semver.major(packument.latest)}` : posix.basename(ref)
-    const { variants } = nav.find(c => c.url === '/cli')
-    const { children } = variants.find(v => posix.basename(v.url) === id)
-    return yaml.stringify(children).replace(new RegExp(`/cli/${id}/`, 'g'), '/')
   }
 
   const build = t.mock('../lib/build', {
@@ -86,16 +75,6 @@ const mockBuild = async ({ releases, packument = {}, testdir: testdirOpts }) => 
           }, {}),
         }
       },
-    },
-    '../lib/gh.js': {
-      getFile: async ({ ref }) => navSection(ref),
-      pathExists: async (ref, p) => {
-        if (ref.includes('v6') && p.includes('docs/lib/content')) {
-          return null
-        }
-        return p
-      },
-      nwo: `npm/cli`,
     },
   })
 
@@ -137,7 +116,7 @@ t.test('prereleases', async (t) => {
   const releases = getReleases()
   const { build, testdir } = await mockBuild({
     releases,
-    packument: { versions: ['6.14.18', '7.24.2', '8.19.3', '9.0.0-pre.2'], latest: '8.19.3' },
+    packument: { versions: ['6.14.17', '7.24.2', '8.19.3', '9.0.0-pre.2'], latest: '8.19.3' },
   })
 
   await build({ prerelease: false })

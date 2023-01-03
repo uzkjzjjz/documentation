@@ -1,7 +1,8 @@
 [
   {
     "id": "v6",
-    "branch": "release/v6"
+    "branch": "release/v6",
+    "useBranch": true
   },
   {
     "id": "v7",
